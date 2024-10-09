@@ -11,7 +11,7 @@ endif
 CCNAME:=$(notdir $(CC))
 BUILD_DIR := build_$(CCNAME)_$(shell $(CC) -dumpmachine)_$(shell $(CC) -dumpversion)
 
-CXXFLAGS := -Wall -Wextra -Werror -ggdb -Wfatal-errors -Wshadow
+CXXFLAGS := -Wall -Wextra -ggdb -Wshadow
 CXXFLAGS += -fdiagnostics-color=auto
 CXXFLAGS += -fPIC
 CXXFLAGS += -Iinclude
@@ -26,7 +26,7 @@ CXXFLAGS += -I$(MVLC_DIR)/external/argh
 
 ifeq (,$(MODE))
   CXXFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE
-  CXXFLAGS += -ggdb -O
+  CXXFLAGS += -ggdb -O0
 endif
 ifeq (release,$(MODE))
   COMPILE_MODE := release
