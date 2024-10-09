@@ -33,7 +33,7 @@ int mvlcc_stop(mvlcc_t);
 void mvlcc_disconnect(mvlcc_t);
 int mvlcc_init_readout(mvlcc_t);
 int mvlcc_readout_eth(mvlcc_t, uint8_t **, size_t);
-int mvlcc_single_vme_read(mvlcc_t a_mvlc, uint32_t address, uint32_t * value, uint8_t amod, uint8_t dataWidt);
+int mvlcc_single_vme_read(mvlcc_t a_mvlc, uint32_t address, uint32_t * value, uint8_t amod, uint8_t dataWidth);
 int mvlcc_single_vme_write(mvlcc_t a_mvlc, uint32_t address, uint32_t value, uint8_t amod, uint8_t dataWidth);
 int mvlcc_register_read(mvlcc_t a_mvlc, uint16_t address, uint32_t *value);
 int mvlcc_register_write(mvlcc_t a_mvlc, uint16_t address, uint32_t value);
