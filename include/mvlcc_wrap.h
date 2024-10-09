@@ -42,6 +42,9 @@ int mvlcc_is_mvlc_valid(mvlcc_t a_mvlc);
 int mvlcc_is_ethernet(mvlcc_t a_mvlc);
 
 
+/* spdlog level names: error, warn, info, debug, trace */
+void mvlcc_set_global_log_level(const char *levelName);
+
 #ifdef __cplusplus
 }
 #endif

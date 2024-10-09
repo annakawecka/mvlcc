@@ -361,3 +361,8 @@ int mvlcc_is_ethernet(mvlcc_t a_mvlc)
 	auto m = static_cast<struct mvlcc *>(a_mvlc);
 	return m->ethernet != nullptr;
 }
+
+void mvlcc_set_global_log_level(const char *levelName)
+{
+	set_global_log_level(spdlog::level::from_str(levelName));
+}
