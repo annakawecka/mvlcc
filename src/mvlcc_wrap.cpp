@@ -377,6 +377,129 @@ int mvlcc_is_usb(mvlcc_t a_mvlc)
 	return m->usb != nullptr;
 }
 
+namespace
+{
+// Direct VME block read execution support code:
+//
+// The vmeBlockRead(Swapped)() methods where never intended to be used for
+// readouts. They return the raw response, including MVLC frame headers
+// (basically the USB framing format). The code in mvlcc_vme_block_read() reads
+// into a work buffer, then post-processes the result to get rid of the headers.
+
+struct end_of_frame: public std::exception {};
+
+// Helper structure keeping track of the number of words left in a MVLC
+// style data frame.
+struct FrameParseState
+{
+	explicit FrameParseState(u32 frameHeader = 0)
+		: header(frameHeader)
+		, wordsLeft(extract_frame_info(frameHeader).len)
+	{}
+
+	FrameParseState(const FrameParseState &) = default;
+	FrameParseState &operator=(const FrameParseState &o) = default;
+
+	inline explicit operator bool() const { return wordsLeft; }
+	inline FrameInfo info() const { return extract_frame_info(header); }
+
+	inline void consumeWord()
+	{
+		if (wordsLeft == 0)
+			throw end_of_frame();
+		--wordsLeft;
+	}
+
+	inline void consumeWords(size_t count)
+	{
+		if (wordsLeft < count)
+			throw end_of_frame();
+
+		wordsLeft -= count;
+	}
+
+	u32 header;
+	u16 wordsLeft;
+};
+
+u32 consume_one(std::basic_string_view<u32> &input)
+{
+	assert(!input.empty());
+
+	auto result = input[0];
+	input.remove_prefix(1);
+	return result;
+}
+
+struct BltPostProcessState
+{
+	FrameParseState curStackFrame;
+	FrameParseState curBlockFrame;
+};
+
+ssize_t post_process_blt_data(const std::vector<u32> &src, util::span<uint32_t> dest)
+{
+	// Input structure from directly executed block reads:
+	//  0xF3  outer stack frame header
+	//  0x??  reference word that was added by the MVLC library code. Same as a //  "marker" command in a readout script.
+	//  0xF5  first block read frame header.
+	if (src.size() < 3)
+		return -1;
+
+	std::basic_string_view<u32> input(src.data(), src.size());
+	BltPostProcessState state;
+
+	state.curStackFrame = FrameParseState(consume_one(input));
+	consume_one(input); // reference word
+	state.curBlockFrame = FrameParseState(consume_one(input));
+
+	const auto outEnd = std::end(dest);
+	auto outIter = std::begin(dest);
+
+	try
+	{
+
+		while (!input.empty())
+		{
+			if (extract_frame_info(state.curStackFrame.header).type != frame_headers::StackFrame)
+			{
+				// The outer frame is not a stack frame.
+				return -1;
+			}
+
+			if (extract_frame_info(state.curBlockFrame.header).type != frame_headers::BlockRead)
+			{
+				// The inner frame is not a block frame.
+				return -1;
+			}
+
+			while (!input.empty() && state.curBlockFrame && outIter < outEnd)
+			{
+				*outIter++ = consume_one(input);
+				state.curBlockFrame.consumeWord();
+			}
+
+			// The inner block frame does not have the continue flag set, so we're done.
+			if (!(extract_frame_flags(state.curBlockFrame.header) & frame_flags::Continue))
+				break;
+
+			if (input.size() < 2) // need at least two words: outer 0xF9 StackContinuation and inner 0xF5 BlockRead
+				return -1;
+
+			state.curStackFrame = FrameParseState(consume_one(input));
+			state.curBlockFrame	= FrameParseState(consume_one(input));
+		}
+	}
+	catch (const end_of_frame &e)
+	{
+		return -1; // should not happen, data format corrupted
+	}
+
+	return std::distance(std::begin(dest), outIter);
+}
+
+} /* End namespace. */
+
 int mvlcc_vme_block_read(mvlcc_t a_mvlc, uint32_t address, uint32_t *buffer, size_t sizeIn,
   size_t *sizeOut, struct MvlccBlockReadParams params)
 {
