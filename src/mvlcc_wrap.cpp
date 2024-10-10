@@ -76,6 +76,7 @@ void
 mvlcc_free_mvlc(mvlcc_t a_mvlc)
 {
 	auto m = static_cast<struct mvlcc *>(a_mvlc);
+	m->ethernet = nullptr;
 	delete m;
 }
 
