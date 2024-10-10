@@ -12,6 +12,7 @@ struct mvlcc
 	mesytec::mvlc::MVLC mvlc;
 	mesytec::mvlc::eth::MVLC_ETH_Interface *ethernet;
 	mesytec::mvlc::usb::MVLC_USB_Interface *usb;
+	std::vector<u32> bltWorkBuffer;
 };
 
 int readout_eth(eth::MVLC_ETH_Interface *a_eth, uint8_t *a_buffer,
@@ -386,23 +387,41 @@ int mvlcc_vme_block_read(mvlcc_t a_mvlc, uint32_t address, uint32_t *buffer, siz
 	auto &mvlc = m->mvlc;
 
 	const u16 maxTransfers = sizeIn / (vme_amods::is_mblt_mode(params.amod) ? 2 : 1);
-
-	util::span<uint32_t> dest(buffer, sizeIn);
-
 	std::error_code ec;
+
+	m->bltWorkBuffer.clear();
+	m->bltWorkBuffer.reserve(maxTransfers/sizeof(u32));
 
 	if (vme_amods::is_mblt_mode(params.amod) && params.swap)
 	{
-		ec = mvlc.vmeBlockReadSwapped(address, params.amod, maxTransfers, dest, params.fifo);
+		ec = mvlc.vmeBlockReadSwapped(address, params.amod, maxTransfers, m->bltWorkBuffer, params.fifo);
 	}
 	else
 	{
-		ec = mvlc.vmeBlockRead(address, params.amod, maxTransfers, dest, params.fifo);
+		ec = mvlc.vmeBlockRead(address, params.amod, maxTransfers, m->bltWorkBuffer, params.fifo);
 	}
 
-	log_buffer(default_logger(), spdlog::level::debug, dest, "vmeBlockRead()");
+	log_buffer(default_logger(), spdlog::level::info, m->bltWorkBuffer,
+		fmt::format("vmeBlockRead() (result={}, {}) raw data", ec.value(), ec.message()), 10);
 
-	*sizeOut = dest.size();
+	*sizeOut = 0;
+
+	if (!ec)
+	{
+		util::span<uint32_t> dest(buffer, sizeIn);
+		ssize_t r = post_process_blt_data(m->bltWorkBuffer, dest);
+		if (r >= 0)
+			*sizeOut = r;
+		else
+		{
+			*sizeOut = 0;
+			return -r;
+		}
+	}
+
+	log_buffer(default_logger(), spdlog::level::info, std::basic_string_view<u32>(buffer, *sizeOut),
+		fmt::format("vmeBlockRead() (result={}, {}) post processed data", ec.value(), ec.message()), 10);
+
 	return ec.value();
 }
 
