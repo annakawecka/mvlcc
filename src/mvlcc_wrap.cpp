@@ -17,6 +17,15 @@ int readout_eth(eth::MVLC_ETH_Interface *a_eth, uint8_t *a_buffer,
     size_t *bytes_transferred);
 int send_empty_request(MVLC *a_mvlc);
 
+static mvlcc_t make_mvlcc(const MVLC &mvlc, const CrateConfig &crateConfig = {})
+{
+	auto ret = std::make_unique<mvlcc>();
+	ret->mvlc = mvlc;
+	ret->ethernet = dynamic_cast<eth::MVLC_ETH_Interface *>(ret->mvlc.getImpl());
+	ret->config = crateConfig;
+	return ret.release();
+}
+
 mvlcc_t
 mvlcc_make_mvlc_from_crate_config(const char *configname)
 {
@@ -35,11 +44,7 @@ mvlcc_make_mvlc_from_crate_config(const char *configname)
 mvlcc_t
 mvlcc_make_mvlc(const char *urlstr)
 {
-	auto m = new mvlcc();
-	m->mvlc = make_mvlc(urlstr);
-	m->ethernet = dynamic_cast<eth::MVLC_ETH_Interface *>(
-	    m->mvlc.getImpl());
-	return m;
+	return make_mvlcc(make_mvlc(urlstr));
 }
 
 mvlcc_t mvlcc_make_mvlc_eth(const char *host)
