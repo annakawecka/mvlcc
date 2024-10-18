@@ -64,6 +64,7 @@ while [ $# -gt 0 ]; do
 	--libs)
 	    OUT="$OUT ${LIBSDIR}"
 	    OUT="$OUT ${LIBS}"
+	    OUT="$OUT -lstdc++"
 	    ;;
 	--help|-h)
 	    usage 0
