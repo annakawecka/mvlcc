@@ -388,7 +388,7 @@ void mvlcc_print_mvlc_cmd_counters(FILE *out, mvlcc_t a_mvlc)
 
 	auto m = static_cast<struct mvlcc *>(a_mvlc);
 	auto &mvlc = m->mvlc;
-	auto counters = mvlc.getCmdPipeCounters();
+	const auto counters = mvlc.getCmdPipeCounters();
 
 	fprintf(out, "super txs: totalTxs=%lu, retries=%lu, cmd txs: totalTxs=%lu, retries=%lu, execRequestsLost=%lu, execResponsesLost=%lu",
 		(unsigned long) counters.superTransactionCount,
@@ -398,6 +398,11 @@ void mvlcc_print_mvlc_cmd_counters(FILE *out, mvlcc_t a_mvlc)
 		(unsigned long) counters.stackExecRequestsLost,
 		(unsigned long) counters.stackExecResponsesLost);
 
+	if (m->ethernet)
+	{
+		const auto cmdStats = m->ethernet->getPipeStats()[0];
+		fprintf(out, fmt::format(", eth: lostPackets={}", cmdStats.lostPackets).c_str());
+	}
 }
 
 void *mvlcc_get_mvlc_object(mvlcc_t a_mvlc)
