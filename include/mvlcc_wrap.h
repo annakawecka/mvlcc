@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h> // for FILE
 
 typedef void *mvlcc_t;
 
@@ -45,6 +46,10 @@ int mvlcc_is_usb(mvlcc_t a_mvlc);
 
 /* spdlog level names: error, warn, info, debug, trace */
 void mvlcc_set_global_log_level(const char *levelName);
+
+/* Prints stack transaction retry counters and some more stats related to direct
+ * cmd execution. */
+void mvlcc_print_mvlc_cmd_counters(FILE *out, mvlcc_t a_mvlc);
 
 /* (flueke): Returns a pointer to the internal MVLC object.
  * Used in the daq1 hack.
