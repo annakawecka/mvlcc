@@ -380,3 +380,11 @@ void mvlcc_set_global_log_level(const char *levelName)
 {
 	set_global_log_level(spdlog::level::from_str(levelName));
 }
+
+void *mvlcc_get_mvlc_object(mvlcc_t a_mvlc)
+{
+	assert(a_mvlc);
+
+	auto m = static_cast<struct mvlcc *>(a_mvlc);
+	return &m->mvlc;
+}
