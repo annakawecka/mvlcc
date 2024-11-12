@@ -11,6 +11,7 @@ struct mvlcc
 	mesytec::mvlc::CrateConfig config;
 	mesytec::mvlc::MVLC mvlc;
 	mesytec::mvlc::eth::MVLC_ETH_Interface *ethernet;
+	mesytec::mvlc::usb::MVLC_USB_Interface *usb;
 };
 
 int readout_eth(eth::MVLC_ETH_Interface *a_eth, uint8_t *a_buffer,
@@ -22,6 +23,7 @@ static mvlcc_t make_mvlcc(const MVLC &mvlc, const CrateConfig &crateConfig = {})
 	auto ret = std::make_unique<mvlcc>();
 	ret->mvlc = mvlc;
 	ret->ethernet = dynamic_cast<eth::MVLC_ETH_Interface *>(ret->mvlc.getImpl());
+	ret->usb = dynamic_cast<usb::MVLC_USB_Interface *>(ret->mvlc.getImpl());
 	ret->config = crateConfig;
 	return ret.release();
 }
@@ -366,6 +368,12 @@ int mvlcc_is_ethernet(mvlcc_t a_mvlc)
 {
 	auto m = static_cast<struct mvlcc *>(a_mvlc);
 	return m->ethernet != nullptr;
+}
+
+int mvlcc_is_usb(mvlcc_t a_mvlc)
+{
+	auto m = static_cast<struct mvlcc *>(a_mvlc);
+	return m->usb != nullptr;
 }
 
 void mvlcc_set_global_log_level(const char *levelName)
