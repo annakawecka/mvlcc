@@ -441,9 +441,10 @@ int post_process_blt_data(const std::vector<u32> &src, util::span<uint32_t> dest
 {
 	// Input structure from directly executed block reads:
 	//  0xF3  outer stack frame header
-	//    0x??  reference word that was added by the MVLC library code. Same as a //  "marker" command in a readout script.
+	//    0x??  reference word that was added by the MVLC library code. Same as a "marker" command in a readout script.
 	//    0xF5  first block read frame header.
-	//   [0xF9  optional stack continuation frames]
+	// [0xF9  optional stack continuation frames]
+	//   [0xF5  optional continuations of the block read frame]
 
 	if (src.size() < 3)
 		return -1;
