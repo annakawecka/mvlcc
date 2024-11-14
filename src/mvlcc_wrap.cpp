@@ -390,10 +390,13 @@ void mvlcc_print_mvlc_cmd_counters(FILE *out, mvlcc_t a_mvlc)
 	auto &mvlc = m->mvlc;
 	auto counters = mvlc.getCmdPipeCounters();
 
-	fprintf(out, fmt::format("super txs: totalTxs={}, retries={}, cmd txs: totalTxs={}, retries={}, execRequestsLost={}, execResponsesLost={}",
-		counters.superTransactionCount, counters.superTransactionRetries,
-		counters.stackTransactionCount, counters.stackTransactionRetries,
-		counters.stackExecRequestsLost, counters.stackExecResponsesLost).c_str());
+	fprintf(out, "super txs: totalTxs=%lu, retries=%lu, cmd txs: totalTxs=%lu, retries=%lu, execRequestsLost=%lu, execResponsesLost=%lu",
+		(unsigned long) counters.superTransactionCount,
+		(unsigned long) counters.superTransactionRetries,
+		(unsigned long) counters.stackTransactionCount,
+		(unsigned long) counters.stackTransactionRetries,
+		(unsigned long) counters.stackExecRequestsLost,
+		(unsigned long) counters.stackExecResponsesLost);
 
 }
 
