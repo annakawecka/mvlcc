@@ -401,7 +401,8 @@ void mvlcc_print_mvlc_cmd_counters(FILE *out, mvlcc_t a_mvlc)
 	if (m->ethernet)
 	{
 		const auto cmdStats = m->ethernet->getPipeStats()[0];
-		fprintf(out, fmt::format(", eth: lostPackets={}", cmdStats.lostPackets).c_str());
+		fprintf(out, ", eth: lostPackets=%lu",
+			(unsigned long) cmdStats.lostPackets);
 	}
 }
 
