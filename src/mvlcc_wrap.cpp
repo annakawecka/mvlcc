@@ -203,7 +203,7 @@ readout_eth(eth::MVLC_ETH_Interface *a_eth, uint8_t *a_buffer,
 		}
 		if (result.leftoverBytes()) {
 			printf("Leftover bytes. Bailing out!\n");
-			return ec.value();
+			return 1; /* Cannot use ec.value, is 0. */
 		}
 		buffer += result.bytesTransferred;
 		bytes_free -= result.bytesTransferred;
