@@ -47,7 +47,7 @@ CFLAGS="$CFLAGS -I ${MVLCC_DIR}/include/"
 LDFLAGS="$LDFLAGS"
 # The platform support libs ($LIBS from config) must be last
 LIBSDIR="-L${MVLCC_DIR}/${LIB_DIR} -L${MVLC_DIR}/build/"
-LIBS="$LIBS -lmvlcc -lmesytec-mvlc \
+LIBS="$LIBS -lmvlcc -lmesytec-mvlc -lstdc++ \
     -Wl,-rpath=${MVLC_DIR}/build/"
 
 while [ $# -gt 0 ]; do
@@ -64,7 +64,6 @@ while [ $# -gt 0 ]; do
 	--libs)
 	    OUT="$OUT ${LIBSDIR}"
 	    OUT="$OUT ${LIBS}"
-	    OUT="$OUT -lstdc++"
 	    ;;
 	--help|-h)
 	    usage 0
