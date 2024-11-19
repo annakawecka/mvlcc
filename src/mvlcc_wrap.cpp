@@ -513,10 +513,10 @@ int post_process_blt_data(const std::vector<u32> &src, util::span<uint32_t> dest
 } /* End namespace. */
 
 int mvlcc_vme_block_read(mvlcc_t a_mvlc, uint32_t address, uint32_t *buffer, size_t sizeIn,
-  size_t *sizeOut, struct MvlccBlockReadParams params)
+  size_t *wordsOut, struct MvlccBlockReadParams params)
 {
 	assert(buffer);
-	assert(sizeOut);
+	assert(wordsOut);
 
 	auto m = static_cast<struct mvlcc *>(a_mvlc);
 	auto &mvlc = m->mvlc;
@@ -538,19 +538,19 @@ int mvlcc_vme_block_read(mvlcc_t a_mvlc, uint32_t address, uint32_t *buffer, siz
 	log_buffer(default_logger(), spdlog::level::debug, m->bltWorkBuffer,
 		fmt::format("vmeBlockRead() (result={}, {}) raw data", ec.value(), ec.message()), 10);
 
-	*sizeOut = 0;
+	*wordsOut = 0;
 
 	if (!ec)
 	{
 		util::span<uint32_t> dest(buffer, sizeIn);
 
-		if (post_process_blt_data(m->bltWorkBuffer, dest, *sizeOut) != 0)
+		if (post_process_blt_data(m->bltWorkBuffer, dest, *wordsOut) != 0)
 		{
-			spdlog::warn("post_process_blt_data() failed, wordsCopied={}", *sizeOut);
+			spdlog::warn("post_process_blt_data() failed, wordsCopied={}", *wordsOut);
 		}
 	}
 
-	log_buffer(default_logger(), spdlog::level::debug, std::basic_string_view<u32>(buffer, *sizeOut),
+	log_buffer(default_logger(), spdlog::level::debug, std::basic_string_view<u32>(buffer, *wordsOut),
 		fmt::format("vmeBlockRead() (result={}, {}) post processed data", ec.value(), ec.message()), 10);
 
 	return ec.value();
