@@ -55,11 +55,11 @@ struct MvlccBlockReadParams
  * Writes the raw blockread contents, stripped of any MVLC framing, into buffer.
  *
  * Returns 0 on success, non-zero otherwise.
- * The number of words copied into the output buffer is returned in sizeOut.
- * sizeIn and sizeOut in units of 32-bit words.
+ * The number of words copied into the output buffer is returned in wordsOut.
+ * sizeIn and wordsOut in units of 32-bit words.
  */
 int mvlcc_vme_block_read(mvlcc_t a_mvlc, uint32_t address, uint32_t *buffer, size_t sizeIn,
-  size_t *sizeOut, struct MvlccBlockReadParams params);
+  size_t *wordsOut, struct MvlccBlockReadParams params);
 
 /* spdlog level names: error, warn, info, debug, trace */
 void mvlcc_set_global_log_level(const char *levelName);
